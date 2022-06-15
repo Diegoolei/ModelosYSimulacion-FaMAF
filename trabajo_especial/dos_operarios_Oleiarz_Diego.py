@@ -1,6 +1,5 @@
 from random import random
 from math import inf, log
-from statistics import pstdev
 
 
 def init(N, lambda_F):
@@ -14,12 +13,11 @@ def init(N, lambda_F):
     return X, t, r, t_rep
 
 
-
 def dos_operarios(N, lambda_F, lambda_R, s):
     X, t, r, t_rep = init(N, lambda_F)
     repuestos = s
-    while True :    
-        ### Caso 1
+    while True:
+        # Caso 1
         if X[0] < t_rep[0]:
             t = X[0]
             r += 1
@@ -35,7 +33,7 @@ def dos_operarios(N, lambda_F, lambda_R, s):
             if r == 2:
                 t_rep[1] = t - log(random())*lambda_R
                 t_rep.sort()
-        ### Caso 2
+        # Caso 2
         if t_rep[0] < X[0]:
             t = t_rep[0]
             r -= 1
@@ -44,18 +42,3 @@ def dos_operarios(N, lambda_F, lambda_R, s):
             else:
                 t_rep[0] = inf
             t_rep.sort()
-                
-
-def estimar_esperanza(n, f):
-    suma = 0
-    for _ in range(n):
-        suma += f(7, 1, 1/8, 3)
-    return (suma/n)
-
-
-def estimar_desvio(n, f):
-    simulaciones = [f(7, 1, 1/8, 3) for _ in range(n)]
-    return pstdev(simulaciones)
-
-print(estimar_esperanza(10000, dos_operarios))
-print(estimar_desvio(10000, dos_operarios))
