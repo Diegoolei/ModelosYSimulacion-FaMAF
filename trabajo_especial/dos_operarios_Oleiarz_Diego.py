@@ -13,7 +13,7 @@ def init(N, lambda_F):
     return X, t, r, t_rep
 
 
-def dos_operarios(N, lambda_F, lambda_R, s):
+def dos_operarios(N, s, lambda_F, lambda_R):
     X, t, r, t_rep = init(N, lambda_F)
     repuestos = s
     while True:

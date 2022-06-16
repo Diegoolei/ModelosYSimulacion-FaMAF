@@ -68,7 +68,6 @@ Para mantener que **X** es una lista ordenada, al haber agregado un nuevo elemen
 
 Ahora queda revisar la que acaba de fallar iniciaría su reparación de inmediato. De ser ese el caso, se debe generar su tiempo de reparación que sabemos corresponde a una distribución exponencial de parámetro **lambda_R** y, sumada al tiempo actual **t**, equivaldrá al momento de reparación de la caja registradora. Ese valor debe ser almacenado en la variable **t_rep** (La variable puede sufrir cambios de tipo segun la cantidad de operarios que manejen el taller).
 
-
 **Caso 2:** Una caja registradora es reparada:
 
 Ahora estaremos situados en el momento en que se repara una caja registradora, por lo cuál debemos valuar **t** en **t_rep** (**t = t_rep**).
@@ -82,21 +81,53 @@ En caso de no quedar cajas a ser reparadas (**r == 0**), **t_rep** debe volver a
 
 ## Resultados
 
+Los próximos resultados serán a partir de los parámetros:
+
+- N = 7
+- lambda_F = 1
+- lambda_R = 1/8
+- Cantidad de simulaciones = 10.000
+
+| Cantidad de Operarios | Cajas de Repuesto | Esperanza de fallo | Desviación estandar de fallo |
+| --------------------- | ----------------- | ------------------ | ---------------------------- |
+| 1                     | 3                 | 1.63574            | 1.40651                      |
+| 1                     | 4                 | 2.57686            | 2.22929                      |
+| 2                     | 3                 | 3.35988            | 3.30125                      |
+| 2                     | 4                 | 8.13540            | 7.97496                      |
+
 ### Histograma
 
-![Histograma con los valores de 10.000 simulaciones de tiempos de fallo para un operario.]()
+### Histograma con los valores de 10.000 simulaciones de tiempos de fallo para un operario.
 
-![Histograma con los valores de 10.000 simulaciones de tiempos de fallo para dos operario.]()
+![Histograma con los valores de 10.000 simulaciones de tiempos de fallo para un operario.](image/Informe_Oleiarz_Diego/un_operario.png)
 
 #### Características sobresalientes de los gráficos
 
-### Análisis del problema
+Es facil observar que un gran porcentaje de todas las instancias de simulacion finalizan antes del primer mes para el caso de un solo operario y tres cajas de repuesto, por lo que podría considerarse una opcion no muy conveniente; Su esperanza es de aproximadamente un mese y medio.
 
-### Comparativa de casos
+#### VS Un operario con cuatro cajas de repuesto
 
-#### Dos operarios con tres cajas de repuesto
+A diferencia del caso anterior la concentración de los casos pasa al segundo mes y por lo tanto podría considerarse una mejora; Su esperanza es de aproximadamente dos meses y medio.
 
-#### Un operario con cuatro cajas de repuesto
+### Histograma con los valores de 10.000 simulaciones de tiempos de fallo para dos operarios.
+
+![Histograma con los valores de 10.000 simulaciones de tiempos de fallo para dos operarios.](image/Informe_Oleiarz_Diego/dos_operarios.png)
+
+#### Características sobresalientes de los gráficos
+
+Distinto al caso de un operario y tres repuestos, la concentración de los casos se encuentra casi igualmente en el primer mes que en el segundo, aumentando el tiempo que se mantiene abierto el supermercado; Su esperanza es de aproximadamente tres meses y medio.
+
+#### VS Dos operarios con tres cajas de repuesto
+
+Es el mejor caso del análisis, presentando una baja concentracion de simulaciones finalizadas en los primeros meses a comparación de los anteriormente planteados (cuatro veces menor que el primero de ellos); Su esperanza es de aproximadamente ocho meses.
+
+### Histograma con los valores de 10.000 simulaciones de tiempos de fallo para uno y dos operarios.
+
+![Histograma con los valores de 10.000 simulaciones de tiempos de fallo para uno y dos operarios.](image/Informe_Oleiarz_Diego/completo.png)
+
+#### Comparativa de casos
+
+Gracias a éste gráfico es muy facil comparar todos los casos, y se hace más facil todavía observar la ventaja del caso de dos operarios y cuatro repuestos contra el de un operario y tres repuestos.
 
 ---
 
@@ -104,9 +135,10 @@ En caso de no quedar cajas a ser reparadas (**r == 0**), **t_rep** debe volver a
 
 ### Resumen del análisis
 
+Como resultado de los valores observables en la sección anterior, podemos concluir que la mejor forma para aumentar el tiempo que el supermercado puede mantenerse abierto es contratando un nuevo operario y aumentar la cantidad de repuestos disponibles a 4, lo cual aumenta la esperanza del tiempo en mas de el doble que simplemente aumentar un operario o aumentar en uno los repuestos.
+
 ---
 
 ## Referencias
 
 - *Ross, D. S. M. (1999). Simulacion. En *El método de simulación por medio de eventos discretos: Problema de reparación* (2.^a^ ed., pp. 99–101). Prentice Hall.*
-- _Kisbye, Patricia. (2022). Modelos y Simulación._

@@ -13,7 +13,7 @@ def init(N, lambda_F):
     return X, t, r, t_rep
 
 
-def un_operario(N, lambda_F, lambda_R, s):
+def un_operario(N, s, lambda_F, lambda_R):
     X, t, r, t_rep = init(N, lambda_F)
     while True:
         # Caso 1
@@ -30,7 +30,7 @@ def un_operario(N, lambda_F, lambda_R, s):
                 t_rep = t - log(random())*lambda_R
 
         # Caso 2
-        if t_rep < X[0]:
+        if t_rep <= X[0]:
             t = t_rep
             r -= 1
             if r > 0:
