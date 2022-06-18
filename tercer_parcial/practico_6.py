@@ -3,6 +3,10 @@ from tabulate import tabulate
 from time import time
 from math import log, e, sqrt, exp, sin, pi
 
+
+N_sim = 10000
+
+
 #!NOTE Funciones Generales
 
 
@@ -111,7 +115,7 @@ def generar_empirica(datos):
     return datos[U]
 
 
-def generar_muestra_bootstrap(datos):
+def generar_muestra_bootstrap_jose(datos):
     """
     Genera una muestra bootstrap a partir de la distribucion empirica
     de los datos dados
@@ -119,6 +123,19 @@ def generar_muestra_bootstrap(datos):
     n = len(datos)        # Tamaño de la muestra bootstrap apropiado
     muestra = generar_muestra(lambda: generar_empirica(datos), n)
     return muestra
+
+
+def generar_muestra_bootstrap(data):
+    """
+    Genera una muestra bootstrap a partir de la distribucion empirica
+    de los datos dados
+    """
+    X = []
+    a = len(data)
+    for _ in range(a):
+        U = int(a * random())
+        X.append(data[U])
+    return X
 
 
 def esperanza_empirica(datos):
@@ -131,7 +148,7 @@ def esperanza_empirica(datos):
 
 def varianza_empirica(datos):
     """
-    Calcula la varianza empirica de los datos datos
+    Calcula la varianza empirica de los datos dados
     """
     mu = esperanza_empirica(
         datos)  # Suponemos que no conocemos el valor esperado real
@@ -149,22 +166,146 @@ def var_muestral_mu(datos, mu):
     return var
 
 
-#!NOTE Ejercicio 10
+#!NOTE Ejercicio 1
+def ej_1():
+    pass
 
+
+#!NOTE Ejercicio 2
+def ej_2():
+    pass
+
+
+#!NOTE Ejercicio 3
+def ej_3():
+    pass
+
+
+#!NOTE Ejercicio 4
+def ej_4():
+    pass
+
+
+#!NOTE Ejercicio 5
+def ej_5():
+    pass
+
+
+#!NOTE Ejercicio 6
+def ej_6():
+    pass
+
+
+#!NOTE Ejercicio 7
+def ej_7():
+    pass
+
+
+#!NOTE Ejercicio 8
+def ej_8():
+    pass
+
+
+#!NOTE Ejercicio 9
+def ej_9():
+    #! C)
+    data = [3.0592, 2.3304, 2.8548, 1.2546, 2.1628,
+            4.9828, 5.4259, 0.9078, 4.5811, 3.2749]
+    a = 2.5
+    #! A)
+    data_len = len(data)
+    contador = 0
+    for _ in range(N_sim):
+        data_gen = generar_muestra_bootstrap(data)
+        media_muestral_empirica = esperanza_empirica(data_gen)
+        media = esperanza_empirica(data)
+        varianza_muestral = varianza_empirica(data_gen)
+        T = (media_muestral_empirica - media) / \
+            sqrt((varianza_muestral/data_len))
+        if T > a:
+            contador += 1
+    probabilidad = round(contador/N_sim, 5)
+
+    #! B) Todavía no pide usar bootstrap
+    # te da la normal (distribucion conocida)
+    media_muestral_normal = media_muestral(data)
+    var_muestral_normal = var_muestral(data)
+
+    #! Print ejercicio 9
+    datos = [[media_muestral_normal, var_muestral_normal, probabilidad]]
+    headers = ["media_muestral_normal",
+               "var_muestral_normal", "P(T<2.5) estimada"]
+
+    print(tabulate(datos, headers, tablefmt="pretty"))
+
+
+#!NOTE Ejercicio 10
 def ej_10():
     """
     Valor esperado Empírico: Igual a la esperanza muestral (con los datos 
     dados), no tiene sentido tratar de generar la empírica ya que es 
     uniformemente distribuída
 
+    Bootrstrap: Tengo un conjunto de datos cuya distribucion es desconocida,
+    uso la distribucion empirica para generar muestras
+
+    Media Muestral usando Bootstrap: Genero una muestra mediante Bootstrap
+    y calculo su media
     """
-    data = [7.5, 12.3, 8.8, 7.9, 9.3, 10.4, 10.9, 9.6, 9.1, 11, 2]
+    data = [7.5, 12.3, 8.8, 7.9, 9.3, 10.4, 10.9, 9.6, 9.1, 11.2]
+
     #! A) Valor esperado Empirico
     E_empirica = esperanza_empirica(data)
 
-    #! B) Aproximación Bootstrap del ECM
-    ECM = 0
-    for _ in 10000:
-        ECM += (E_empirica - generar_muestra_bootstrap(data))**2
+    #! B) Aproximación Bootstrap del ECM (Error Cuadrático Medio)
+    # ECM = Esperanza((media - media_simulada)**2)
+    aux = 0
+    for _ in range(N_sim):
+        aux += (E_empirica - media_muestral(generar_muestra_bootstrap(data)))**2
 
-    ECM = ECM/10000
+    ECM = aux/N_sim
+
+    #! C) P(8 <= Xmedia <= 10)
+    contador = 0
+    for _ in range(N_sim):
+        if 8 <= media_muestral(generar_muestra_bootstrap(data)) <= 10:
+            contador += 1
+    probabilidad = contador/N_sim
+
+    #! Print ejercicio 10
+    datos = [[E_empirica, ECM, probabilidad]]
+    headers = ["Esperanza empirica", "ECM estimado", "P(8<=X̄<=10) estimada"]
+
+    print(tabulate(datos, headers, tablefmt="pretty"))
+
+
+#!NOTE Ejercicio 11
+def ej_11():
+    """
+    Genera una variable aleatoria con probabilidad de exito
+    igual a p(|s² - σ²| > 0.02)
+    """
+    data = [144.98, 145.04, 145.02, 145.04, 145.03, 145.03, 145.04,
+            144.97, 145.05, 145.03, 145.02, 145, 145.02]
+
+    contador = 0
+    for _ in range(N_sim):
+        var_muestral = varianza_empirica(generar_muestra_bootstrap(data))
+        var_empirica = varianza_empirica(data)
+        guarda = abs(var_empirica - var_muestral) > 0.02
+        if guarda:
+            contador += 1
+
+    probabilidad = contador/N_sim
+
+    #! Print ejercicio 11
+    datos = [[esperanza_empirica(data), var_empirica, probabilidad]]
+    headers = ["Esperanza empirica", "Varianza empirica",
+               "P(|s² - σ²| > 0.02) estimado"]
+
+    print(tabulate(datos, headers, tablefmt="pretty"))
+
+
+#!NOTE Ejercicio 12
+def ej_12():
+    pass
