@@ -264,18 +264,130 @@ def ej_3():
 
 
 #!NOTE Ejercicio 4
+#! Estimación de n y e
+def generar_N():
+    """
+    Genera la variable aleatoria N del ejercicio 4
+    """
+    n = 0
+    suma = 0
+    while suma < 1:
+        n += 1
+        suma += random()
+    return n
+
+
+def estimador_e(n):
+    """
+    Genera valores aleatorios del estimador de e (media muestral)
+    Args:
+        n: Tamaño de la muestra
+    """
+    muestra      = generar_muestra(generar_N, n)
+    estimacion_e = media_muestral(muestra)
+    return estimacion_e
+
+
 def ej_4():
-    pass
+    # Inciso b
+    # Calculo la varianza muestral del estimador e
+    n = 1000
+    muestra_estimador  = generar_muestra(lambda: estimador_e(n), n)
+    varianza_estimador = var_muestral(muestra_estimador) 
+
+    # Inciso c
+    # Estimamos e por intervalos de confianza al 95% con un ancho de 0.1
+    z_alpha_2 = 1.96
+    d = 0.1 / (2 * z_alpha_2)
+    estimacion_e = media_muestral_d(d, generar_N)[0]
+
+
+    datos_4   = [[e, estimacion_e, varianza_estimador]]
+    headers_4 = ["Valor real e","Estimacion de e", "Varianza estimador"]
+    print(tabulate(datos_4, headers=headers_4, tablefmt="pretty"))
 
 
 #!NOTE Ejercicio 5
+#! Generadores
+def generar_M():
+    """
+    Genera la variable aleatoria M dada en el ejercicio 5
+    """
+    numero_actual = random()
+    n = 2
+    while True:
+        numero_proximo = random()
+        if numero_actual < numero_proximo:
+            numero_actual = numero_proximo
+            n+=1
+        else:
+            return n
+        
+
+def estimador_e(n):
+    """
+    Genera valores aleatorios del estimador de e (media muestral)
+    Args:
+        n: Tamaño de la muestra
+    """
+    muestra      = generar_muestra(generar_M, n)
+    estimacion_e = media_muestral(muestra)
+    return estimacion_e
+
+
 def ej_5():
-    pass
+    # Estimamos el valor de e con 1000 simulaciones
+    n = 1000
+
+    # Inciso c
+    muestra_m    = generar_muestra(generar_M, n)
+    estimacion_e = media_muestral(muestra_m)
+
+    # Inciso d 
+    # Varianza del estimador de e (media muestral de M)
+    muestra_estimador      = generar_muestra(lambda: estimador_e(n), n)
+    var_muestral_estimador = var_muestral(muestra_estimador) 
+
+    # Estimacion de e con intervalos de confianza del 95% y largo del 0.01
+    z_alpha_2 = 1.96
+    L = 0.01
+    d = L / (2 * z_alpha_2)
+    estimacion_e_confianza = media_muestral_d(d, generar_M)[0]
+
+    data_5    = [[estimacion_e, var_muestral_estimador, estimacion_e_confianza]]
+    headers_5 = ["Valor por estimador", "Varianza del estimador", 
+                "Estimacion por intervalo"]
+
+    print(tabulate(data_5, headers=headers_5, tablefmt="pretty"))
 
 
 #!NOTE Ejercicio 6
+#! Generador
+def cae_en_circulo():
+    """
+    Genera la variable aleatoria bernoulli que modela el hecho de que un punto
+    aleatorio del cuadrado [-1,1]x[-1,1] caiga en el circulo unitario
+    """
+    X = random()*2 - 1    # U(-1, 1)  
+    Y = random()*2 - 1    # U(-1, 1)
+    return int(X**2 + Y**2 <= 1)
+
+
 def ej_6():
-    pass
+    # Estimamos pi por intervalo de confianza al 95% con una cota de 0.1
+    L = 0.1
+    z_alpha_2 = 1.96         # Valor de la normal para la confianza al 95%
+    d = L / (8 * z_alpha_2)  # Por justificacion analitica
+
+    simular_pi = estimar_proporcion_d(d, cae_en_circulo) 
+
+    estimacion_pi  = simular_pi[0] * 4  # Porque la media muestral de cae_en_circulo estima pi/4
+    tamaño_muestra = simular_pi[2]
+
+    data_6    = [[pi, estimacion_pi, tamaño_muestra]]
+    headers_6 = ["Valor de pi", "Estimacion de pi", "Tamaño final de la muestra"]
+
+    print(tabulate(data_6, headers=headers_6, tablefmt="pretty"))
 
 
 #!NOTE Funciones para BOOTSTRAP
