@@ -8,8 +8,6 @@ N_sim = 10000
 
 
 #!NOTE Funciones Generales
-
-
 def estimar_esperanza(N, generador):
     """
     Estima la esperanza usando la ley fuerte de los grandes numeros
@@ -76,7 +74,10 @@ def media_muestral_d(d, generador, n=100):
         i += 1
         X = generador()
         media_previa = media
+
+        # Forma recursiva del estimador de la media muestral
         media = media_previa + (X - media_previa) / i
+        # Forma recursiva del estimador de la varianza muestral
         scuad = scuad * (1 - 1/(i-1)) + i*(media - media_previa) ** 2
     return media, scuad, i
 
@@ -102,6 +103,179 @@ def estimar_proporcion_d(d, generador, n=100):
         p = p + (X - p) / i
     var_m = p * (1 - p)
     return p, var_m, i
+
+
+def normal_ross(mu=0, sigma=1):
+    """
+    Genera una variable normal estandar (por defecto) usando el algoritmo descrito 
+    en el libro de Sheldon Ross, el cual esta basado en el metodo de aceptacion y 
+    rechazo
+    Args:
+        mu   : Esperanza de la variable normal
+        sigma: Desvio estandar de la variable normal 
+    """
+    while True:
+        Y1 = -log(random())  # Exponencial de parametro 1
+        Y2 = -log(random())  # Exponencial de parametro 1
+        if Y2 >= (Y1 - 1) ** 2 / 2:
+            # En este punto Y1 es una variable aleatoria con distribucion |Z|
+            # La siguiente comparacion es el metodo para generar Z con composicion
+            # a partir del generador de |Z|
+            if random() < 0.5:
+                return Y1 * sigma + mu
+            else:
+                return -Y1 * sigma + mu
+
+
+#!NOTE Ejercicio 1
+def ej_1():
+    """
+    Resumen del ejercicio: Generar una muestra de datos normales a partir 
+    del algorítmo dado en el libro ross para generar eventos normales y 
+    un generador de muestras.
+    a) Ver cuantos eventos tiene la muestra cumpliendo sigma / sqrt(n) < 0.1
+    b) Calcular la media muestral
+    c) Calcular la varianza muestral
+    """
+    # Tamaño esperado de la muestra
+    # sigma / 0.1 < sqrt(n) <=> (sigma*10)**2 < n pero sabemos que
+    # el desvio de una normal estandar es 1 por lo tanto n = 101
+    tamaño_muestra_esperado = 101
+
+    # Simulamos las condiciones pedidas en el enunciado
+    n = 30
+    d = 0.1
+
+    simulacion_1 = media_muestral_d(d, normal_ross, n)
+
+    #! Print ejercicio 1
+    tamaño_muestra_obtenido = simulacion_1[2]
+    media_muestral_1 = round(simulacion_1[0], 4)
+    varianza_muestral_1 = round(simulacion_1[1], 4)
+
+    datos = [[tamaño_muestra_esperado, tamaño_muestra_obtenido,
+              media_muestral_1, varianza_muestral_1]]
+
+    headers = ["Tamaño esperado", "Tamaño obtenido", "Media muestral",
+               "Varianza muestral"]
+
+    print(tabulate(datos, headers, tablefmt="pretty"))
+
+
+#!NOTE Ejercicio 2
+#! Estimacion de las integrales por Monte Carlo
+def generar_i():
+    """
+    Devuelve un valor aleatorio de la funcion g determinada por el metodo de
+    Monte Carlo para el inciso i
+    """
+    U = random()
+    return exp(U) / sqrt(2*U)
+
+
+def generar_ii():
+    """
+    Devuelve un valor aleatorio de la funcion g determinada por el metodo de
+    Monte Carlo para el inciso ii
+    """
+    U = random()
+    return 1/U**2 * (1/U - 1)**2 * exp(-(1/U - 1)**2)
+
+
+def ej_2():
+    # Estimacion de las integrales por Monte Carlo
+    d = 0.01
+    estimacion_i = media_muestral_d(d, generar_i)
+    estimacion_ii = media_muestral_d(d, generar_ii)
+
+    datos_2 = [["i", estimacion_i[0], estimacion_i[2]],
+               ["ii", estimacion_ii[0]*2, estimacion_ii[2]]
+               ]
+    headers_2 = ["Inciso", "Estimacion", "Datos generados"]
+
+    print(tabulate(datos_2, headers=headers_2, tablefmt="pretty"))
+
+
+#!NOTE Ejercicio 3
+#! Estimacion de las integrales por Monte Carlo
+def integral_i():
+    """
+    Una funcion que sirve para estimar la integral del inciso i usando el
+    metodo de Monte Carlo
+    """
+    U = random()
+    return sin((U+1)*pi) / (U+1)
+
+
+def integral_ii():
+    """
+    Una funcion que sirve para estimar la integral del inciso ii usando el
+    metodo de Monte Carlo
+    """
+    U = random()
+    return 1/U**2 * (3 / (3 + (1/U - 1)**4))
+
+
+def ej_3():
+    # Parametros para estimar las integrales con un intervalo de confianza del 95%
+    # con el SEMIANCHO no mayor a 0.001 del intervalo
+    z_alpha_2 = 1.96
+    d = 0.001 / z_alpha_2
+
+    # Estimamos las integrales simulando hasta satisfacer las condiciones dadas en
+    # el enunciado (un intervalo no mayor al 0.001 con una confianza del 95%)
+    b_3_i = media_muestral_d(d, integral_i)
+    b_3_ii = media_muestral_d(d, integral_ii)
+
+    # Generamos las muestras de los distintos tamaños pedidos en la tabla
+    numero_sim = [1000, 5000, 7000]
+    sim_3_i = list(map(lambda n: generar_muestra(integral_i, n), numero_sim))
+    sim_3_ii = list(map(lambda n: generar_muestra(integral_ii, n), numero_sim))
+
+    # Calculamos los estimadores puntuales en las muestras obtenidas
+    sim_3_i = list(map(lambda datos: [media_muestral(datos),
+                                      var_muestral(datos), len(datos)],
+                       sim_3_i))
+
+    sim_3_ii = list(map(lambda datos: [media_muestral(datos),
+                                       var_muestral(datos), len(datos)],
+                        sim_3_ii))
+
+    # Agregamos las simulaciones anteriores a las listas correspondientes
+    sim_3_i.append(b_3_i)
+    sim_3_ii.append(b_3_ii)
+
+    # Funcion para calcular el intervalo obtenido en las simulaciones
+    # a partir de los resultados en la simulacion
+    def intervalo(media, var, n): return [round(media - sqrt(var/n) * z_alpha_2, 4),
+                                          round(media + sqrt(var/n) * z_alpha_2, 4)]
+
+    # Formateo de datos
+    datos_3_i = list(map(lambda x: [x[2], intervalo(
+        x[0], x[1], x[2]), round(x[0], 4)], sim_3_i))
+    datos_3_ii = list(map(lambda x: [x[2], intervalo(
+        x[0], x[1], x[2]), round(x[0], 4)], sim_3_ii))
+    headers_3 = ["N° de simulaciones", "Intervalo", "Valor estimado"]
+
+    print("\nInciso i")
+    print(tabulate(datos_3_i, headers=headers_3, tablefmt="pretty"))
+    print("\nInciso ii")
+    print(tabulate(datos_3_ii, headers=headers_3, tablefmt="pretty"))
+
+
+#!NOTE Ejercicio 4
+def ej_4():
+    pass
+
+
+#!NOTE Ejercicio 5
+def ej_5():
+    pass
+
+
+#!NOTE Ejercicio 6
+def ej_6():
+    pass
 
 
 #!NOTE Funciones para BOOTSTRAP
@@ -164,36 +338,6 @@ def var_muestral_mu(datos, mu):
     """
     var = sum(list(map(lambda x: (x-mu)**2, datos))) / len(datos)
     return var
-
-
-#!NOTE Ejercicio 1
-def ej_1():
-    pass
-
-
-#!NOTE Ejercicio 2
-def ej_2():
-    pass
-
-
-#!NOTE Ejercicio 3
-def ej_3():
-    pass
-
-
-#!NOTE Ejercicio 4
-def ej_4():
-    pass
-
-
-#!NOTE Ejercicio 5
-def ej_5():
-    pass
-
-
-#!NOTE Ejercicio 6
-def ej_6():
-    pass
 
 
 #!NOTE Ejercicio 7
