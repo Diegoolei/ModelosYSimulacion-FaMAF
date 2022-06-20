@@ -416,17 +416,20 @@ def ej_6():
     Z = (p_estimado - p_i)/sqrt((p_i - q_i) / n)
     """
 
-    probabilidades = [0.31, 0.22, 0.12, 0.10, 0.08, 0.06, 0.04, 0.04, 0.02, 0.01]
+    probabilidades = [0.31, 0.22, 0.12, 0.10,
+                      0.08, 0.06, 0.04, 0.04, 0.02, 0.01]
     datos = [188, 138, 87, 65, 48, 32, 30, 34, 13, 2]
     k = 10
 
     #! d) Utilizando una chi cuadrado
-    T = calcular_T(datos, probabilidades)           # Estadistico de la muestra original
-    n = sum(datos)                                  # Tamaño de la muestra original
+    # Estadistico de la muestra original
+    T = calcular_T(datos, probabilidades)
+    # Tamaño de la muestra original
+    n = sum(datos)
 
     # Estimamos el p-valor
     # Usando la prueba de Pearson
-    p_valor = p_valor_pearson(T, grados_libertad = k - 1)
+    p_valor = p_valor_pearson(T, grados_libertad=k - 1)
 
     #! e) Utilizando una simulación
     Nsim = 10**4
@@ -437,6 +440,8 @@ def ej_6():
 
     print(tabulate(data, headers, tablefmt="pretty"))
 
+
+#! Auxiliar ejercicio 7
 def acumulada_exponencial_7(x):
     """
     Acumulada de la distribucion dada en la hipotesis nula (e(1))
@@ -446,7 +451,8 @@ def acumulada_exponencial_7(x):
     else:
         Lambda = 1
         return 1 - exp(-Lambda * x)
-        
+
+
 #!NOTE Ejercicio 7
 def ej_7():
     """
@@ -459,10 +465,133 @@ def ej_7():
     print(D)
 
     p_valor = estimar_p_valor_k(D, N_sim, 10)
-    
+
     data = [[D, p_valor]]
     headers = ["D", "p-valor k"]
 
     print(tabulate(data, headers, tablefmt="pretty"))
 
-ej_7()
+
+#!NOTE FUNCIONES GENERALES (PROBLEMAS DE DOS MUESTRAS)
+def calcular_R(datos_1, datos_2):
+    """
+    Calcula el valor del estadistico dado en el test de suma de rangos
+    Args:
+        datos_1:   Primera muestra
+        datos_2:   Segunda muestra
+    """
+    n = len(datos_1)
+    m = len(datos_2)
+    R = 0
+
+    datos = np.array(datos_1 + datos_2)   # Lista auxiliar
+    orden = np.argsort(datos)             # Indices ordenados
+
+    for i in range(n + m):
+        if orden[i] < n:
+            R += i + 1
+    return R
+
+
+def rangos(n, m, r):
+    """
+    Formula recursiva para calcular Pn,m(r) = Ph0(R <= r)
+    """
+    if n == 1 and m == 0:
+        if r < 1:
+            p = 0
+        else:
+            p = 1
+    elif n == 0 and m == 1:
+        if r < 0:
+            p = 0
+        else:
+            p = 1
+    else:
+        if n == 0:
+            p = rangos(0, m-1, r)
+        elif m == 0:
+            p = rangos(n-1, 0, r-n)
+        else:  # n>0, m>0
+            p = (n*rangos(n-1, m, r-n-m)+m*rangos(n, m-1, r))/(n+m)
+    return p
+
+
+def p_valor_recursivo(n, m, r):
+    """
+    Calcula el p_valor usando la formula recursiva Pn,m(r) = Ph0(R <= r)
+    Args:
+        n:    Cantidad de elementos en la muestra 1
+        m:    Cantidad de elementos en la muestra 2
+        r:    Rango de la muestra original
+    """
+    p_valor = 2 * min(rangos(n, m, r), 1 - rangos(n, m, r-1))
+    return p_valor
+
+
+def cdf_z(x): 
+    """
+    Acumulada de la normal estandar
+    """
+    return erf(x/sqrt(2))/2 + 0.5
+
+
+def p_valor_normal(n, m, r):
+    """
+    Calcula el p_valor usando la distribucion normal estandar
+    Args:
+        n:    Cantidad de elementos en la muestra 1
+        m:    Cantidad de elementos en la muestra 2
+        r:    Rango de la muestra original
+    """
+    r_star = (r - n*(n+m+1)/2) / sqrt(n*m*(n+m+1)/12)   # r* de la teoria
+    p_valor = 2 * min(cdf_z(r_star), 1 - cdf_z(r_star))
+    return p_valor
+
+
+def estimar_p_valor_r(r, Nsim, n, m):
+    """
+    Estima el p-valor por medio de simulaciones
+    Args:
+        r   :   Estadistico R de la muestra original 
+        Nsim:   Cantidad de simulaciones a realizar
+        n   :   Tamaño de la primera muestra
+        m   :   Tamaño de la segunda muestra
+    """
+    mayor_a_r = 0
+    menor_a_r = 0
+    aux = list(range(1, n+m+1))   # Arreglo para generar estadisticos
+    for _ in range(Nsim):
+        aux = permutar(aux)
+        r_sim = sum(aux[:n])
+        if r_sim >= r:
+            mayor_a_r += 1
+        if r_sim <= r:
+            menor_a_r += 1
+
+    p_valor = 2 * min(mayor_a_r, menor_a_r) / Nsim
+    return p_valor
+
+
+#!NOTE Ejericio 11
+def ej_11():
+    datos_1 = [65.2, 67.1, 69.4, 78.4, 74.0, 80.3]
+    datos_2 = [59.4, 72.1, 68.0, 66.2, 58.5]
+    
+    R = calcular_R(datos_1, datos_2)
+
+    #! A) calcular el p-valor exacto (se hace con recursividad)
+    p_valor_rec = p_valor_recursivo(len(datos_1), len(datos_2), R)
+
+    #! B) calcular elp−valor aproximado en base a una aproximación normal
+    p_valor_nor = p_valor_normal(len(datos_1), len(datos_2), R)
+
+    #! C) Calcular el p−valor aproximado en base a una simulación
+    p_valor_sim = estimar_p_valor_r(R, N_sim, len(datos_1), len(datos_2))
+
+    #! Print Ejercicio 11
+    data_11 = [[p_valor_rec, p_valor_nor, p_valor_sim]]
+    headers_11 = ["p-valor exacto", "p-valor (normal)", "p-valor (simulacion)"]
+    print(tabulate(data_11, headers=headers_11, tablefmt="pretty"))
+
+
