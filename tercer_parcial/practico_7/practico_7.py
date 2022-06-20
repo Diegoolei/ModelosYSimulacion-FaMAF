@@ -472,6 +472,21 @@ def ej_7():
     print(tabulate(data, headers, tablefmt="pretty"))
 
 
+#!NOTE Ejercicio 8
+def ej_8():
+    pass
+
+
+#!NOTE Ejercicio 9
+def ej_9():
+    pass
+
+
+#!NOTE Ejercicio 10
+def ej_10():
+    pass
+
+
 #!NOTE FUNCIONES GENERALES (PROBLEMAS DE DOS MUESTRAS)
 def calcular_R(datos_1, datos_2):
     """
@@ -529,7 +544,7 @@ def p_valor_recursivo(n, m, r):
     return p_valor
 
 
-def cdf_z(x): 
+def cdf_z(x):
     """
     Acumulada de la normal estandar
     """
@@ -577,7 +592,7 @@ def estimar_p_valor_r(r, Nsim, n, m):
 def ej_11():
     datos_1 = [65.2, 67.1, 69.4, 78.4, 74.0, 80.3]
     datos_2 = [59.4, 72.1, 68.0, 66.2, 58.5]
-    
+
     R = calcular_R(datos_1, datos_2)
 
     #! A) calcular el p-valor exacto (se hace con recursividad)
@@ -595,3 +610,75 @@ def ej_11():
     print(tabulate(data_11, headers=headers_11, tablefmt="pretty"))
 
 
+#!NOTE Ejericio 12
+def ej_12():
+    datos1 = [19, 31, 39, 45, 47, 66, 75]
+    datos2 = [28, 36, 44, 49, 52, 72, 72]
+
+    R = calcular_R(datos1, datos2)
+
+    #! A) calcular el p-valor exacto (se hace con recursividad)
+    p_valor_rec = p_valor_recursivo(len(datos1), len(datos2), R)
+
+    #! B) calcular el p−valor aproximado en base a una aproximación normal
+    p_valor_nor = p_valor_normal(len(datos1), len(datos2), R)
+
+    #! C) calcular el p−valor aproximado en base a una simulacion
+    p_valor_sim = estimar_p_valor_r(R, N_sim, len(datos1), len(datos2))
+
+    #! Print Ejercicio 12
+    data = [[p_valor_rec, p_valor_nor, p_valor_sim]]
+    headers = ["p-valor exacto", "p-valor (normal)", "p-valor (simulacion)"]
+    print(tabulate(data, headers, tablefmt="pretty"))
+
+
+#!NOTE Ejericio 13
+def ej_13():
+    datos_1 = [39, 40, 38.9, 35, 32, 33, 22.8, 36]    # Primera muestra
+
+    datos_2 = [36.5, 33.1, 35.2, 30, 29, 26, 35.1]  # totobot
+
+    R = calcular_R(datos_1, datos_2)
+
+    #! A) calcular el p-valor exacto (se hace con recursividad)
+    p_valor_rec = p_valor_recursivo(len(datos_1), len(datos_2), R)
+
+    #! B) calcular elp−valor aproximado en base a una aproximación normal
+    p_valor_nor = p_valor_normal(len(datos_1), len(datos_2), R)
+
+    #! C) Calcular el p−valor aproximado en base a una simulación
+    p_valor_sim = estimar_p_valor_r(R, N_sim, len(datos_1), len(datos_2))
+
+    data = [["p-valor (recursivo)", p_valor_rec, p_valor_rec < 0.05],
+            ["p-Valor (normal)", p_valor_nor, p_valor_nor < 0.05],
+            ["p-valor (simulado)", p_valor_sim, p_valor_sim < 0.05]]
+
+    headers = ["Caso", "Estimacion", "¿Rechazar H0 al 5% de rechazo?"]
+
+    print(tabulate(data, headers=headers, tablefmt="pretty"))
+
+#!NOTE Ejericio 14
+
+
+def ej_14():
+    datos_1 = [141, 132, 154, 142, 143, 150, 134, 140]
+    datos_2 = [133, 138, 136, 125, 135, 130, 127, 131, 116, 128]
+
+    R = calcular_R(datos_1, datos_2)
+
+    #! A) calcular el p-valor exacto (se hace con recursividad)
+    p_valor_rec = p_valor_recursivo(len(datos_1), len(datos_2), R)
+
+    #! B) calcular elp−valor aproximado en base a una aproximación normal
+    p_valor_nor = p_valor_normal(len(datos_1), len(datos_2), R)
+
+    #! C) Calcular el p−valor aproximado en base a una simulación
+    p_valor_sim = estimar_p_valor_r(R, N_sim, len(datos_1), len(datos_2))
+
+    data = [["p-valor (recursivo)", p_valor_rec, p_valor_rec < 0.05],
+            ["p-Valor (normal)", p_valor_nor, p_valor_nor < 0.05],
+            ["p-valor (simulado)", p_valor_sim, p_valor_sim < 0.05]]
+
+    headers = ["Caso", "Estimacion", "¿Rechazar H0 al 5% de rechazo?"]
+
+    print(tabulate(data, headers=headers, tablefmt="pretty"))
