@@ -87,17 +87,9 @@ def calcular_frecuencias(datos):
     """
     la lista tiene que estar ordenada
     """
-    print(datos)
     U = []
-    count = 1
-    for i in range():
-        if datos[i-1] == datos[i]:
-            count += 1
-        else:
-            U.append(count)
-            count = 1
-    U.append(count)
-    print(U)
+    for i in range(np.max(datos) + 1):
+        U.append(np.count_nonzero(datos == i))
     return U
 
 
@@ -345,52 +337,65 @@ def ej_4():
 #!NOTE Ejercicio 5
 def ej_5():
     """
-    Distribución binomial con parámetros(n=8, p), donde p no se conoce
+    H0: Los datos provienen de una distribución binomial de parametros X ~ bin(n=8, p)
+    donde p no se conoce
     """
     datos = np.array([6, 7, 3, 4, 7, 3, 7, 2, 6, 3, 7, 8, 2, 1, 3, 5, 8, 7])
-    datos.sort()
-    frecuencias = np.array([0, 1, 2, 4, 1, 1, 2, 5, 2])
-    k = 9
     n = 8
-    
-    #! En las binomiales la esperanza es n.p, como conozco el n si calculo 
-    #! la esperanza, puedo calcular el p
-    esperanza = estimar_esperanza(datos)
-    p_estimado = esperanza/n
 
-    probabilidades = np.array(list(map(lambda x: masa_binomial(x, n, p_estimado)*18, list(range(0, 9)))))
+    #! En las binomiales, E[X] = n.p como conozco el n, si estimo la esperanza
+    #! puedo estimar el p: E[X]/n = p     =>     media_X/n = p_estimada
+    esperanza = estimar_esperanza(datos)
+    probabilidad_estimada = esperanza/n
+
+    datos.sort()
+    frecuencias = np.array(calcular_frecuencias(datos))
+    k = len(frecuencias)
+
+    # * FORMA A DE HACER EL EJERCICIO (ESTIMACIÓN)
+    #! Calculo las probabilidades que efectivamente corresponden a una binomial
+    #! Usando la probabilidad estimada
+    probabilidades = np.array(
+        list(map(lambda x: masa_binomial(x, n, probabilidad_estimada) * len(datos), list(range(0, k)))))
 
     T = calcular_T(frecuencias, probabilidades)
-    p_valor = p_valor_pearson(T, grados_libertad = k - 1 - 1)  
+    p_valor = p_valor_pearson(T, grados_libertad=k - 1 - 1)
+
+    # -------------------------------------------- #
+    # * FORMA B DE HACER EL EJERCICIO (SIMULACION)
 
     p_valor_sim = 0
     for _ in range(N_sim):
         # Muestra generada a partir de la distribucion con el parametro estimado
         # en la muestra original
-        muestra_sim = generar_muestra(lambda: generar_binomial(8, p_estimado), n)
-        
+        muestra_sim = generar_muestra(
+            lambda: generar_binomial(n, probabilidad_estimada), len(datos))
+
         # Re-estimamos el parametro p pero ahora con esta muestra
-        p_sim_est = sum(muestra_sim) / len(muestra_sim) / 8
-        
+        #! media_X/n = p_estimada
+        p_sim_est = estimar_esperanza(muestra_sim)/n
+
         # Calculamos la frecuencia observada en la muestra
-        Nsim = np.zeros(9)
+        frec_simulada = np.zeros(9)
         for dato in muestra_sim:
-            Nsim[dato] += 1
-            
+            frec_simulada[dato] += 1
+
         # Calculamos la probabilidad de masa teorica de cada valor posible con el parametro
         # estimado con la muestra de la simulacion
-        p_sim = np.array(list(map(lambda x: masa_binomial(x, n, p_sim_est)*18, list(range(0, 9)))))
-        # Calculamos el valor del estadistico de la simulacion
-        t_sim = calcular_T(Nsim, p_sim)
+        p_sim = np.array(
+            list(map(lambda x: masa_binomial(x, n, p_sim_est)*len(datos), list(range(0, k)))))
 
-        if t_sim > T:
+        # Calculamos el valor del estadistico de la simulacion
+        T_sim = calcular_T(frec_simulada, p_sim)
+
+        if T_sim > T:
             p_valor_sim += 1
-            
+
     p_valor_sim = p_valor_sim / N_sim
 
-    datos   = [[T, p_valor, p_valor_sim]]
+    #! Print Ejercicio 5
+
+    datos = [[T, p_valor, p_valor_sim]]
     headers = ["Estadistico T", "p-valor por Pearson", "p-valor simulado"]
 
     print(tabulate(datos, headers, tablefmt="pretty"))
-
-ej_5()
