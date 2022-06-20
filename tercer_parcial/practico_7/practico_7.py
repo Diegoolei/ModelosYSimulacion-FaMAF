@@ -1,4 +1,5 @@
 import re
+from urllib.request import DataHandler
 import numpy as np
 from scipy.stats import chi2
 from random import random, gauss, gammavariate
@@ -235,6 +236,8 @@ def calcular_D(muestra, acumulada_h):
     """
 
     n = len(muestra)
+    muestra = np.array(muestra)
+    muestra.sort()
     # Vectores_auxiliares
     F = np.array(list(map(acumulada_h, muestra)))
     j = np.array(list(range(1, n+1))) / n
@@ -388,6 +391,7 @@ def ej_5():
         # Calculamos el valor del estadistico de la simulacion
         T_sim = calcular_T(frec_simulada, p_sim)
 
+        #! Comparo con la forma A
         if T_sim > T:
             p_valor_sim += 1
 
@@ -399,3 +403,66 @@ def ej_5():
     headers = ["Estadistico T", "p-valor por Pearson", "p-valor simulado"]
 
     print(tabulate(datos, headers, tablefmt="pretty"))
+
+
+#!NOTE Ejericicio 6
+def ej_6():
+    """
+    Datos Discretos;
+    H0: las áreas de la rueda para los distintos premios, numerados del 1 al 10,
+    son respectivamente: 31%, 22%, 12%, 10%, 8%, 6%, 4%, 4%, 2% y 1% 
+    Tenemos 637 eventos, por lo cual podemos utilizar el Teorema Central del Limite
+    Pruebas de Hipótesis para la Proporción poblacional:
+    Z = (p_estimado - p_i)/sqrt((p_i - q_i) / n)
+    """
+
+    probabilidades = [0.31, 0.22, 0.12, 0.10, 0.08, 0.06, 0.04, 0.04, 0.02, 0.01]
+    datos = [188, 138, 87, 65, 48, 32, 30, 34, 13, 2]
+    k = 10
+
+    #! d) Utilizando una chi cuadrado
+    T = calcular_T(datos, probabilidades)           # Estadistico de la muestra original
+    n = sum(datos)                                  # Tamaño de la muestra original
+
+    # Estimamos el p-valor
+    # Usando la prueba de Pearson
+    p_valor = p_valor_pearson(T, grados_libertad = k - 1)
+
+    #! e) Utilizando una simulación
+    Nsim = 10**4
+    p_valor_sim = estimar_p_valor_pearson(T, Nsim, probabilidades, k, n)
+
+    data = [[p_valor, p_valor_sim, T]]
+    headers = ["p-valor Pearson", "p-valor Simulacion", "Estadistico"]
+
+    print(tabulate(data, headers, tablefmt="pretty"))
+
+def acumulada_exponencial_7(x):
+    """
+    Acumulada de la distribucion dada en la hipotesis nula (e(1))
+    """
+    if x < 0:
+        return 0
+    else:
+        Lambda = 1
+        return 1 - exp(-Lambda * x)
+        
+#!NOTE Ejercicio 7
+def ej_7():
+    """
+    Generar los valores correspondientes a 10 variables aleatorias exponenciales independientes,
+    cada una con media 1. Luego, en base al estadístico de prueba de Kolmogorov-Smirnov, aproxime el
+    p−valor de la prueba de que los datos realmente provienen de una distribución exponencial con media 1
+    """
+    exponenciales = generar_muestra(lambda: generar_exp(1), 10)
+    D = calcular_D(exponenciales, acumulada_exponencial_7)
+    print(D)
+
+    p_valor = estimar_p_valor_k(D, N_sim, 10)
+    
+    data = [[D, p_valor]]
+    headers = ["D", "p-valor k"]
+
+    print(tabulate(data, headers, tablefmt="pretty"))
+
+ej_7()
