@@ -358,10 +358,10 @@ def ej_5():
     esperanza = estimar_esperanza(datos)
     p_estimado = esperanza/n
 
-    probabilidades = np.array(list(map(lambda x: masa_binomial(x, n, p_estimado), list(range(0, 9)))))
+    probabilidades = np.array(list(map(lambda x: masa_binomial(x, n, p_estimado)*18, list(range(0, 9)))))
 
     T = calcular_T(frecuencias, probabilidades)
-    p_valor = p_valor_pearson(T, grados_libertad = k - 2)  
+    p_valor = p_valor_pearson(T, grados_libertad = k - 1 - 1)  
 
     p_valor_sim = 0
     for _ in range(N_sim):
@@ -379,7 +379,7 @@ def ej_5():
             
         # Calculamos la probabilidad de masa teorica de cada valor posible con el parametro
         # estimado con la muestra de la simulacion
-        p_sim = np.array(list(map(lambda x: masa_binomial(x, n, p_sim_est), list(range(0, 9)))))
+        p_sim = np.array(list(map(lambda x: masa_binomial(x, n, p_sim_est)*18, list(range(0, 9)))))
         # Calculamos el valor del estadistico de la simulacion
         t_sim = calcular_T(Nsim, p_sim)
 
@@ -392,3 +392,5 @@ def ej_5():
     headers = ["Estadistico T", "p-valor por Pearson", "p-valor simulado"]
 
     print(tabulate(datos, headers, tablefmt="pretty"))
+
+ej_5()
