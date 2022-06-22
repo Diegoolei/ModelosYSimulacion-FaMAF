@@ -6,6 +6,8 @@ import numpy as np
 N_sim = 10000
 
 #!NOTE Funciones generales
+
+
 def uniforme_d(n, m):
     """
     Genera numeros aleatorios entre n y m (inclusive) 
@@ -199,6 +201,7 @@ def geometrica_TI(p_exito):
         F += p
         i += 1
     return i
+
 
 def geometrica_SIM(p_exito):
     """
@@ -690,6 +693,7 @@ def generar_8_TI(Lambda, k):
         F += p
     return i
 
+
 def generar_8_AYR(Lambda, k):
     """
     Genera la variable aleatoria descrita en el enunciado del ejercicio 8
@@ -699,15 +703,17 @@ def generar_8_AYR(Lambda, k):
         Lambda: Parametro Lambda de la variable
         k     : Terminos antes de truncar la acumulada de poisson
     """
-    
+
     # Como la va del ejercicio 8 es una poisson dividida una constante
-    # la maxima probabilidad se optiene en X = int(Lambda) por lo cual puedo 
+    # la maxima probabilidad se optiene en X = int(Lambda) por lo cual puedo
     # calcular C del metodo de aceptacion y rechazo facilmente
-    
-    F_k    = acumulada_poisson(Lambda, k)
-    masa_x = lambda x: exp(-Lambda) * Lambda ** int(x) / factorial(int(x)) / F_k 
-    C      = masa_x(Lambda) / (1 / (k + 1))   # Probabilidad de la uniforme en Lambda
-    
+
+    F_k = acumulada_poisson(Lambda, k)
+    def masa_x(x): return exp(-Lambda) * \
+        Lambda ** int(x) / factorial(int(x)) / F_k
+    # Probabilidad de la uniforme en Lambda
+    C = masa_x(Lambda) / (1 / (k + 1))
+
     while(True):
         U = random()
         Y = uniforme_d(0, k)
@@ -720,9 +726,8 @@ def ej_8():
     # Calculo el valor real de P(X > 2) = 1 - F(2)
     Lambda, k, repeticiones = 0.7, 10, 1000
     F_k = acumulada_poisson(Lambda, k)
-    f_8 = lambda x: exp(-Lambda) * Lambda ** x / factorial(x) / F_k
+    def f_8(x): return exp(-Lambda) * Lambda ** x / factorial(x) / F_k
     F_2_real = 1 - (f_8(0) + f_8(1) + f_8(2))
-
 
     # Calculo el valor estimado de P(X > 2) usando el metodo de la transformada inversa
     p_x = np.array([0, 0, 0])    # p(0), p(1), p(2)
@@ -756,7 +761,7 @@ def ejercicio_9():
     de la transformada inversa
     """
     # Arreglos necesarios para hacer programacion dinamica y ahorrar tiempo de computo
-    multiplo  = np.array([1/2, 2, 3])
+    multiplo = np.array([1/2, 2, 3])
     potencias = np.array([1/4, 1, 3])
     i = 1
     F = potencias[0] + potencias[1] / 2 / potencias[2]
@@ -786,39 +791,43 @@ def ej_10():
     p = 0.8
 
     # Esperanza para el algoritmo de transformada inversa
-    time_10_TI_0_8      = time.time()
+    time_10_TI_0_8 = time.time()
     esperanza_10_TI_0_8 = 0
     for _ in range(iteraciones):
         esperanza_10_TI_0_8 += geometrica_TI(p)
     esperanza_10_TI_0_8 = esperanza_10_TI_0_8 / iteraciones
-    time_10_TI_0_8      = np.round((time.time() - time_10_TI_0_8) * 10**3, 4)    # en ms
+    time_10_TI_0_8 = np.round(
+        (time.time() - time_10_TI_0_8) * 10**3, 4)    # en ms
 
     # Esperanza para el algoritmo de simulacion
-    time_10_SIM_0_8      = time.time()
+    time_10_SIM_0_8 = time.time()
     esperanza_10_SIM_0_8 = 0
     for _ in range(iteraciones):
         esperanza_10_SIM_0_8 += geometrica_SIM(p)
     esperanza_10_SIM_0_8 = esperanza_10_SIM_0_8 / iteraciones
-    time_10_SIM_0_8      = np.round((time.time() - time_10_SIM_0_8) * 10**3, 4)    # en ms
+    time_10_SIM_0_8 = np.round(
+        (time.time() - time_10_SIM_0_8) * 10**3, 4)    # en ms
 
     # p = 0.2
     p = 0.2
 
     # Esperanza para el algoritmo de transformada inversa
-    time_10_TI_0_2      = time.time()
+    time_10_TI_0_2 = time.time()
     esperanza_10_TI_0_2 = 0
     for _ in range(iteraciones):
         esperanza_10_TI_0_2 += geometrica_TI(p)
     esperanza_10_TI_0_2 = esperanza_10_TI_0_2 / iteraciones
-    time_10_TI_0_2      = np.round((time.time() - time_10_TI_0_2) * 10**3, 4)    # en ms
+    time_10_TI_0_2 = np.round(
+        (time.time() - time_10_TI_0_2) * 10**3, 4)    # en ms
 
     # Esperanza para el algoritmo de simulacion
-    time_10_SIM_0_2      = time.time()
+    time_10_SIM_0_2 = time.time()
     esperanza_10_SIM_0_2 = 0
     for _ in range(iteraciones):
         esperanza_10_SIM_0_2 += geometrica_SIM(p)
     esperanza_10_SIM_0_2 = esperanza_10_SIM_0_2 / iteraciones
-    time_10_SIM_0_2      = np.round((time.time() - time_10_SIM_0_2) * 10**3, 4)    # en ms
+    time_10_SIM_0_2 = np.round(
+        (time.time() - time_10_SIM_0_2) * 10**3, 4)    # en ms
 
     print("""
         Algoritmo        P        Esperanza          Tiempo
@@ -827,4 +836,4 @@ def ej_10():
         TI           0.8        {}         {} ms
         SIM           0.8        {}         {} ms
     """.format(esperanza_10_TI_0_2, time_10_TI_0_2, esperanza_10_SIM_0_2, time_10_SIM_0_2,
-            esperanza_10_TI_0_8, time_10_TI_0_8, esperanza_10_SIM_0_8, time_10_SIM_0_8))
+               esperanza_10_TI_0_8, time_10_TI_0_8, esperanza_10_SIM_0_8, time_10_SIM_0_8))
