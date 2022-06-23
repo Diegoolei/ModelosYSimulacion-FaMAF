@@ -111,6 +111,7 @@ def ej_3(N):
     return suma/N
 
 
+#!NOTE Auxiliares Ejercicio 4
 def tirar_moneda(p):
     U = random()
     if U < p:
